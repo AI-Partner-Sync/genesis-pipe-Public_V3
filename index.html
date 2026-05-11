@@ -1136,7 +1136,7 @@
             // 必須：CORSプレフライト(OPTIONS)を回避するため、あえて text/plain で送る
             "Content-Type": "text/plain;charset=utf-8" 
           },
-          body: JSON.stringify({ type, fullText: text, history }),
+          body: JSON.stringify({ type, fullText: text, history, userName, aiName }),
         })
         .then(r => r.json()) // opaqueではなく、正々堂々とJSONとして受け取る
         .then(data => {
