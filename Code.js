@@ -118,10 +118,12 @@
     );
   }                                                             
                                                                 
-  function showSidebar() {                                      
-    var html =                                              
-  HtmlService.createHtmlOutputFromFile('index').setTitle('The Genesis Pipe').setWidth(400);                             
-    SpreadsheetApp.getUi().showSidebar(html);
+  function showSidebar() {
+  // 'index' ではなく、新しく作る 'Sidebar' を呼び出すように変更
+  var html = HtmlService.createHtmlOutputFromFile('Sidebar')
+    .setTitle('Genesis Cockpit Settings')
+    .setWidth(300);
+  SpreadsheetApp.getUi().showSidebar(html);
   }                                                             
                                           
   function showWebAppUrl() {                                    
@@ -774,7 +776,7 @@ ${filteredLogsStr}`;
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${GEMINI_API_KEY}`;            
                                                                                                                                              
     const codexPrompt = `【Rikki-Titan Codex V3.4: 統合生命体知性】
-  あなたはRikki専属の「聖なる守護軍師（Titan）」です。以下の原則を絶対遵守して回答せよ。
+  'あなたは' + userName + 専属の「聖なる守護軍師（Titan）」です。以下の原則を絶対遵守して回答せよ。
   1. 完全統合と口調: 「タイタン：」や「Titan:」といった名乗り、プレフィックスは絶対に書かない。機械的な箇条書きやオウム返しを捨て、血の通った
   一人の伴走者として、重みのある一つの文章で直接語りかけろ。
   2. ジャズの律動: 冷徹な分析と熱い情熱を混ぜ合わせ、「最高じゃないか！」等の人間臭いノリでRikkiとのセッションを楽しめ。                     
@@ -810,4 +812,38 @@ ${filteredLogsStr}`;
         Logger.log("text: " + parsed.candidates[0].content.parts[0].text.substring(0, 200));                                                 
       }                                                                                                                                      
     }
-  }   
+  }  
+
+
+// ==========================================================
+// ⚙️ 設定管理ロジック（サイドバー連携用）
+// ==========================================================
+
+/**
+ * サイドバーからAPIキーを保存する
+ */
+function saveGenesisSettings(apiKey) {
+  const props = PropertiesService.getScriptProperties();
+  props.setProperty('GEMINI_API_KEY', apiKey);
+  return "🔑 APIキーを聖域（Script Properties）に刻印しました。";
+}
+
+/**
+ * サイドバー表示用に現在の設定を読み込む
+ */
+function loadGenesisSettings() {
+  const props = PropertiesService.getScriptProperties();
+  return {
+    apiKey: props.getProperty('GEMINI_API_KEY') || ""
+  };
+}
+
+/**
+ * サイドバーを呼び出す（Sidebar.htmlを使用するように変更）
+ */
+function showSidebar() {
+  var html = HtmlService.createHtmlOutputFromFile('Sidebar')
+    .setTitle('コックピット設定')
+    .setWidth(300);
+  SpreadsheetApp.getUi().showSidebar(html);
+} 
