@@ -312,6 +312,85 @@
     .settings-btn-save:hover { background: var(--gold-500); }
     .settings-btn-save:disabled { opacity: 0.5; cursor: not-allowed; }
 
+    /* ── URL Display in Settings ── */
+    .settings-url-section {
+      margin-bottom: 18px; padding: 14px; border-radius: 10px;
+      background: rgba(240,192,64,0.06); border: 1px solid rgba(240,192,64,0.2);
+    }
+    .settings-url-label {
+      font-size: 11px; font-weight: 600; color: var(--text-gold);
+      letter-spacing: 0.06em; margin-bottom: 8px; display: flex; align-items: center; gap: 5px;
+    }
+    .settings-url-row {
+      display: flex; align-items: center; gap: 8px;
+    }
+    .settings-url-display {
+      flex: 1; font-size: 11px; color: var(--text-secondary);
+      background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 6px; padding: 7px 10px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      font-family: monospace;
+    }
+    .settings-url-copy-btn {
+      flex-shrink: 0; padding: 7px 10px; border-radius: 6px;
+      background: rgba(240,192,64,0.15); border: 1px solid rgba(240,192,64,0.3);
+      color: var(--gold-400); font-size: 12px; cursor: pointer; transition: 0.2s;
+      display: flex; align-items: center; gap: 4px;
+    }
+    .settings-url-copy-btn:hover { background: rgba(240,192,64,0.25); }
+    .settings-url-change {
+      font-size: 11px; color: var(--text-secondary); margin-top: 8px;
+      cursor: pointer; text-decoration: underline; text-underline-offset: 2px;
+    }
+    .settings-url-change:hover { color: var(--text-primary); }
+    .settings-url-edit { display: none; margin-top: 8px; }
+    .settings-url-edit.open { display: block; }
+
+    /* ── Initial Setup Modal ── */
+    #setup-overlay {
+      display: none; position: fixed; inset: 0; z-index: 300;
+      background: rgba(2,8,23,0.92); justify-content: center; align-items: center;
+      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    }
+    #setup-overlay.open { display: flex; }
+    #setup-modal {
+      background: var(--navy-800); border: 1px solid var(--glass-border);
+      border-radius: 20px; padding: 32px 28px 28px;
+      width: 360px; max-width: 92vw; box-shadow: 0 32px 80px rgba(0,0,0,0.8);
+    }
+    #setup-modal .setup-icon {
+      font-size: 36px; text-align: center; margin-bottom: 12px;
+    }
+    #setup-modal h3 {
+      margin: 0 0 8px; font-size: 16px; color: var(--gold-400);
+      text-align: center; font-weight: 700;
+    }
+    #setup-modal p {
+      font-size: 13px; color: var(--text-secondary); text-align: center;
+      margin-bottom: 20px; line-height: 1.6;
+    }
+    #setup-modal .setup-step {
+      font-size: 11px; color: var(--text-secondary); margin-bottom: 6px;
+      font-weight: 600; letter-spacing: 0.04em;
+    }
+    #setup-gas-url {
+      width: 100%; padding: 11px 13px; font-size: 13px;
+      background: rgba(13,21,38,0.8); border: 1px solid rgba(240,192,64,0.3);
+      border-radius: 8px; color: var(--text-primary); outline: none;
+      box-sizing: border-box; margin-bottom: 6px; font-family: monospace;
+      transition: border-color 0.2s;
+    }
+    #setup-gas-url:focus { border-color: var(--gold-400); }
+    #setup-gas-url::placeholder { color: rgba(136,153,187,0.5); font-family: sans-serif; }
+    .setup-hint { font-size: 11px; color: var(--text-secondary); margin-bottom: 20px; }
+    #setup-save-btn {
+      width: 100%; padding: 13px; border: none; border-radius: 10px;
+      background: var(--gold-400); color: var(--navy-950);
+      font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.2s;
+    }
+    #setup-save-btn:hover { background: var(--gold-500); }
+    #setup-save-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
     /* ── BGM Control ── */
     #bgm-control {
       display: flex; align-items: center; gap: 7px; padding: 8px 11px;
@@ -412,10 +491,42 @@
 </head>
 <body>
 
+  <!-- 初回セットアップモーダル -->
+  <div id="setup-overlay">
+    <div id="setup-modal">
+      <div class="setup-icon">🔗</div>
+      <h3>Genesis Pipe へようこそ</h3>
+      <p>はじめに、あなたの<br>GASウェブアプリURLを設定してください</p>
+      <div class="setup-step">GASウェブアプリURL（/exec で終わるURL）</div>
+      <input type="url" id="setup-gas-url" placeholder="https://script.google.com/macros/s/.../exec">
+      <div class="setup-hint">スプレッドシートのサイドバー → パートナー設定 からコピーできます</div>
+      <button id="setup-save-btn" onclick="saveInitialSetup()">接続する</button>
+    </div>
+  </div>
+
   <!-- パートナー設定モーダル -->
   <div id="settings-overlay" onclick="handleOverlayClick(event)">
     <div id="settings-modal">
       <h3><span class="material-icons" style="font-size:18px;">settings</span> パートナー設定</h3>
+
+      <!-- GAS URL表示セクション -->
+      <div class="settings-url-section">
+        <div class="settings-url-label">
+          <span class="material-icons" style="font-size:14px;">link</span>
+          接続中のGASウェブアプリURL
+        </div>
+        <div class="settings-url-row">
+          <div class="settings-url-display" id="settings-url-display">未設定</div>
+          <button class="settings-url-copy-btn" onclick="copyGasUrl()">
+            <span class="material-icons" style="font-size:14px;">content_copy</span>
+          </button>
+        </div>
+        <div class="settings-url-change" onclick="toggleUrlEdit()">URLを変更する</div>
+        <div class="settings-url-edit" id="settings-url-edit">
+          <input type="url" id="settings-gas-url-input" class="settings-input" placeholder="https://script.google.com/macros/s/.../exec">
+        </div>
+      </div>
+
       <label class="settings-label">あなたの名前（AIに呼んでもらいたい名前）</label>
       <input type="text" id="settings-user-name" class="settings-input" placeholder="例: 瑠光子">
       <div class="settings-hint">AIがこの名前であなたに語りかけます</div>
@@ -535,11 +646,18 @@
 
   <script>
     /* ── 設定 ── */
-    // ★★★ UserのGASデプロイURL（/exec終わり）に書き換えてください ★★★
-    const WEB_APP_URL = "ここにURLを貼り付ける";
-
-    // Firestoreと連携する場合のみ VercelのURLを設定。不要なら null のまま
     const NEXT_API_BASE_URL = null;
+    const GP_STORAGE_KEY = 'gp_public_v1';
+
+    function loadFromStorage() {
+      try { return JSON.parse(localStorage.getItem(GP_STORAGE_KEY) || '{}'); } catch(e) { return {}; }
+    }
+    function saveToStorage(data) {
+      try { localStorage.setItem(GP_STORAGE_KEY, JSON.stringify({ ...loadFromStorage(), ...data })); } catch(e) {}
+    }
+
+    const _saved = loadFromStorage();
+    let webAppUrl = _saved.webAppUrl || '';
 
     /* ── iOS --vh フォールバック ── */
     (function() {
@@ -552,17 +670,8 @@
     })();
 
     /* ── ユーザー設定の初期化 ── */
-    let userName = 'KURI';
-    let aiName   = 'YODA';
-
-    if (typeof google !== 'undefined' && google.script) {
-      google.script.run
-        .withSuccessHandler(function(s) {
-          if (s && s.userName) userName = s.userName;
-          if (s && s.aiName)   aiName   = s.aiName;
-        })
-        .getUserSettings();
-    }
+    let userName = _saved.userName || 'あなた';
+    let aiName   = _saved.aiName   || 'AI';
 
     /* ══════════════════════════════════════════
        SYNAPSE BACKGROUND
@@ -855,10 +964,10 @@
     }
 
     function saveToGas(type, text, history = null, callback = null) {
-      if (!WEB_APP_URL.includes("/macros/s/")) {
-        alert("⚠️ WEB_APP_URLが正しく設定されていません"); return;
+      if (!webAppUrl.includes("/macros/s/")) {
+        alert("⚠️ GASウェブアプリURLが設定されていません。⚙️パートナー設定から設定してください"); return;
       }
-      fetch(WEB_APP_URL, {
+      fetch(webAppUrl, {
         method: "POST", redirect: "follow",
         headers: { "Content-Type": "text/plain;charset=utf-8" },
         body: JSON.stringify({ type, fullText: text, history, userName, aiName }),
@@ -882,10 +991,36 @@
       document.getElementById('mode-label').innerText = aiToggle.checked ? "AI対話" : "記録";
     }
 
+    /* ── 初回セットアップ ── */
+    function checkInitialSetup() {
+      if (!webAppUrl || !webAppUrl.includes('/macros/s/')) {
+        document.getElementById('setup-overlay').classList.add('open');
+      }
+    }
+    function saveInitialSetup() {
+      const url = document.getElementById('setup-gas-url').value.trim();
+      if (!url.includes('/macros/s/')) {
+        alert('⚠️ 正しいGASウェブアプリURL（/exec で終わるURL）を入力してください'); return;
+      }
+      const btn = document.getElementById('setup-save-btn');
+      btn.disabled = true; btn.textContent = '接続中...';
+      webAppUrl = url;
+      saveToStorage({ webAppUrl: url });
+      btn.textContent = '接続完了！';
+      setTimeout(function() {
+        document.getElementById('setup-overlay').classList.remove('open');
+      }, 600);
+    }
+
     /* ── 設定モーダル ── */
     function openSettings() {
       document.getElementById('settings-user-name').value = userName;
       document.getElementById('settings-ai-name').value   = aiName;
+      const display = document.getElementById('settings-url-display');
+      display.textContent = webAppUrl || '未設定';
+      display.title = webAppUrl || '';
+      document.getElementById('settings-gas-url-input').value = webAppUrl || '';
+      document.getElementById('settings-url-edit').classList.remove('open');
       const btn = document.getElementById('settings-save-btn');
       btn.disabled = false; btn.textContent = '保存する';
       document.getElementById('settings-overlay').classList.add('open');
@@ -896,27 +1031,34 @@
     function handleOverlayClick(e) {
       if (e.target === document.getElementById('settings-overlay')) closeSettings();
     }
+    function toggleUrlEdit() {
+      document.getElementById('settings-url-edit').classList.toggle('open');
+    }
+    function copyGasUrl() {
+      if (!webAppUrl) { alert('URLが設定されていません'); return; }
+      navigator.clipboard.writeText(webAppUrl).then(function() {
+        const btn = document.querySelector('.settings-url-copy-btn');
+        const icon = btn.querySelector('.material-icons');
+        icon.textContent = 'check'; btn.style.color = '#4caf50';
+        setTimeout(function() { icon.textContent = 'content_copy'; btn.style.color = ''; }, 1500);
+      });
+    }
     function saveSettings() {
       const newUserName = document.getElementById('settings-user-name').value.trim();
       const newAiName   = document.getElementById('settings-ai-name').value.trim();
       if (!newUserName || !newAiName) { alert('両方の名前を入力してください'); return; }
+      const urlInput = document.getElementById('settings-gas-url-input').value.trim();
+      const urlEditOpen = document.getElementById('settings-url-edit').classList.contains('open');
+      if (urlEditOpen && urlInput && !urlInput.includes('/macros/s/')) {
+        alert('⚠️ 正しいGASウェブアプリURL（/exec で終わるURL）を入力してください'); return;
+      }
       const btn = document.getElementById('settings-save-btn');
       btn.disabled = true; btn.textContent = '保存中...';
-      if (typeof google !== 'undefined' && google.script) {
-        google.script.run
-          .withSuccessHandler(function() {
-            userName = newUserName; aiName = newAiName;
-            btn.textContent = '保存完了！'; setTimeout(closeSettings, 700);
-          })
-          .withFailureHandler(function(err) {
-            alert('エラー: ' + err.message);
-            btn.disabled = false; btn.textContent = '保存する';
-          })
-          .saveUserSettings(newUserName, newAiName);
-      } else {
-        userName = newUserName; aiName = newAiName;
-        btn.textContent = '保存完了！'; setTimeout(closeSettings, 700);
-      }
+      if (urlEditOpen && urlInput) { webAppUrl = urlInput; }
+      userName = newUserName; aiName = newAiName;
+      saveToStorage({ webAppUrl, userName, aiName });
+      btn.textContent = '保存完了！';
+      setTimeout(closeSettings, 700);
     }
 
     /* ══════════════════════════════════════════
@@ -962,7 +1104,7 @@
       closeSynthesisModal();
       const targetStr = val.replace(/-/g, '/');
       addBubble(`⚗️ ${type}まとめを生成中… (${targetStr})`, 'system');
-      fetch(WEB_APP_URL, {
+      fetch(webAppUrl, {
         method: 'POST', redirect: 'follow',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify({ type: 'synthesis', synthesisType: type, targetStr }),
@@ -994,6 +1136,9 @@
     function removeLoading(id) { const el=document.getElementById(id); if(el)el.remove(); }
     function autoResize(el) { el.style.height='auto'; el.style.height=el.scrollHeight+'px'; }
     textInput.addEventListener('input', function() { autoResize(this); });
+
+    /* ── ページ読み込み完了後: 初回セットアップチェック ── */
+    window.addEventListener('DOMContentLoaded', checkInitialSetup);
   </script>
 </body>
 </html>
