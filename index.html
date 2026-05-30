@@ -522,6 +522,17 @@
       <div class="settings-hint">あなたの専属AI伴走者の名前です</div>
 
       <div class="settings-divider"></div>
+      <label class="settings-label">Gemini APIキー</label>
+      <div style="position:relative">
+        <input type="password" id="settings-api-key" class="settings-input"
+          placeholder="AIza...（Google AI Studioで取得）" style="padding-right:44px">
+        <button type="button" onclick="toggleApiKeyVisibility()"
+          style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text-secondary);font-size:15px;padding:4px"
+          id="api-key-eye">👁</button>
+      </div>
+      <div class="settings-hint">入力しなければ変更されません。既存のキーを上書きする場合のみ入力</div>
+
+      <div class="settings-divider"></div>
       <label class="settings-label" style="font-size:10px;letter-spacing:.12em;opacity:.7">AI最適化（任意）— 入力するとAIがあなたの気質に合わせて応答します</label>
       <label class="settings-label">生年月日</label>
       <input type="date" id="settings-birthdate" class="settings-input">
@@ -540,6 +551,14 @@
       </div>
       <input type="hidden" id="settings-gender" value="">
       <div class="settings-hint">入力しない場合でも通常通り使用できます</div>
+
+      <div class="settings-divider"></div>
+      <label class="settings-label" style="font-size:10px;letter-spacing:.12em;opacity:.7">自動蒸留トリガー — 初回に1回だけ実行してください</label>
+      <button type="button" id="trigger-setup-btn" onclick="setupTriggers()"
+        style="width:100%;padding:11px;border-radius:10px;border:1px solid rgba(79,156,249,0.3);background:rgba(79,156,249,0.07);color:#60a5fa;font-size:13px;cursor:pointer;transition:all .2s;margin-bottom:4px">
+        ⏰ 日・週・月・年のトリガーを設定する
+      </button>
+      <div class="settings-hint" id="trigger-result"></div>
 
       <div class="settings-btn-group">
         <button class="settings-btn-cancel" onclick="closeSettings()">キャンセル</button>
@@ -664,6 +683,7 @@
     let aiName      = _saved.aiName      || 'AI';
     let userBirthdate = _saved.birthdate || '';
     let userGender    = _saved.gender    || '';
+    let userApiKey    = _saved.apiKey    || '';
 
     /* ── 気質計算（personality_db.gsと同じロジック） ── */
     const _EPOCH_HTML = new Date('1926-02-04');
@@ -915,10 +935,12 @@
       display.title = webAppUrl || '';
       document.getElementById('settings-gas-url-input').value = webAppUrl || '';
       document.getElementById('settings-url-edit').classList.remove('open');
-      // 生年月日・性別の現在値をフォームに反映
+      // APIキー・生年月日・性別の現在値をフォームに反映
+      document.getElementById('settings-api-key').value   = '';  // セキュリティのため毎回空にする
       document.getElementById('settings-birthdate').value = userBirthdate || '';
       document.getElementById('settings-gender').value    = userGender    || '';
       _applyGenderStyle(userGender);
+      document.getElementById('trigger-result').textContent = '';
       const btn = document.getElementById('settings-save-btn');
       btn.disabled = false; btn.textContent = '保存する';
       document.getElementById('settings-overlay').classList.add('open');
@@ -926,6 +948,34 @@
     function selectGender(g) {
       document.getElementById('settings-gender').value = g;
       _applyGenderStyle(g);
+    }
+    function toggleApiKeyVisibility() {
+      var input = document.getElementById('settings-api-key');
+      var eye   = document.getElementById('api-key-eye');
+      if (input.type === 'password') { input.type = 'text';     eye.textContent = '🙈'; }
+      else                           { input.type = 'password'; eye.textContent = '👁';  }
+    }
+    function setupTriggers() {
+      if (!webAppUrl) { alert('先にGASウェブアプリURLを設定してください'); return; }
+      var btn    = document.getElementById('trigger-setup-btn');
+      var result = document.getElementById('trigger-result');
+      btn.disabled = true; btn.textContent = '⏳ 設定中...';
+      fetch(webAppUrl, {
+        method: 'POST', redirect: 'follow',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ type: 'setup_triggers' })
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        result.textContent = data.message || '完了';
+        result.style.color = '#60a5fa';
+        btn.disabled = false; btn.textContent = '⏰ 日・週・月・年のトリガーを設定する';
+      })
+      .catch(function() {
+        result.textContent = '⚠️ 通信エラー。GAS URLを確認してください';
+        result.style.color = '#f87171';
+        btn.disabled = false; btn.textContent = '⏰ 日・週・月・年のトリガーを設定する';
+      });
     }
     function _applyGenderStyle(g) {
       var mBtn = document.getElementById('gender-male-btn');
@@ -969,9 +1019,27 @@
       // 生年月日・性別を取得・保存
       const newBirthdate = document.getElementById('settings-birthdate').value.trim();
       const newGender    = document.getElementById('settings-gender').value;
+      const newApiKey    = document.getElementById('settings-api-key').value.trim();
       if (newBirthdate) userBirthdate = newBirthdate;
       if (newGender)    userGender    = newGender;
-      saveToStorage({ webAppUrl, userName, aiName, birthdate: userBirthdate, gender: userGender });
+      if (newApiKey)    userApiKey    = newApiKey;
+      saveToStorage({ webAppUrl, userName, aiName, birthdate: userBirthdate, gender: userGender, apiKey: userApiKey });
+
+      // GASにも設定を送信（APIキー・名前・気質をUserPropertiesに保存）
+      if (webAppUrl) {
+        fetch(webAppUrl, {
+          method: 'POST', redirect: 'follow',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            type: 'save_settings',
+            userName, aiName,
+            apiKey: newApiKey || '',
+            birthdate: userBirthdate,
+            gender: userGender
+          })
+        }).catch(function() {});  // 失敗しても設定画面は閉じる
+      }
+
       btn.textContent = '保存完了！';
       setTimeout(closeSettings, 700);
     }
