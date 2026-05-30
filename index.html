@@ -522,17 +522,6 @@
       <div class="settings-hint">あなたの専属AI伴走者の名前です</div>
 
       <div class="settings-divider"></div>
-      <label class="settings-label">Gemini APIキー</label>
-      <div style="position:relative">
-        <input type="password" id="settings-api-key" class="settings-input"
-          placeholder="AIza...（Google AI Studioで取得）" style="padding-right:44px">
-        <button type="button" onclick="toggleApiKeyVisibility()"
-          style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text-secondary);font-size:15px;padding:4px"
-          id="api-key-eye">👁</button>
-      </div>
-      <div class="settings-hint">入力しなければ変更されません。既存のキーを上書きする場合のみ入力</div>
-
-      <div class="settings-divider"></div>
       <label class="settings-label" style="font-size:10px;letter-spacing:.12em;opacity:.7">AI最適化（任意）— 入力するとAIがあなたの気質に合わせて応答します</label>
       <label class="settings-label">生年月日</label>
       <input type="date" id="settings-birthdate" class="settings-input">
@@ -683,7 +672,7 @@
     let aiName      = _saved.aiName      || 'AI';
     let userBirthdate = _saved.birthdate || '';
     let userGender    = _saved.gender    || '';
-    let userApiKey    = _saved.apiKey    || '';
+    // APIキーはGASのUserProperties（サイドバー）で管理。ブラウザには保存しない。
 
     /* ── 気質計算（personality_db.gsと同じロジック） ── */
     const _EPOCH_HTML = new Date('1926-02-04');
@@ -879,7 +868,7 @@
       fetch(webAppUrl, {
         method: "POST", redirect: "follow",
         headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({ type, fullText: text, history, userName, aiName, apiKey: userApiKey, ...calcPersonality(userBirthdate, userGender) }),
+        body: JSON.stringify({ type, fullText: text, history, userName, aiName, ...calcPersonality(userBirthdate, userGender) }),
       })
       .then(r => r.json())
       .then(data => {
@@ -936,8 +925,7 @@
       document.getElementById('settings-gas-url-input').value = webAppUrl || '';
       document.getElementById('settings-url-edit').classList.remove('open');
       // APIキー・生年月日・性別の現在値をフォームに反映
-      document.getElementById('settings-api-key').value   = '';  // セキュリティのため毎回空にする
-      document.getElementById('settings-birthdate').value = userBirthdate || '';
+document.getElementById('settings-birthdate').value = userBirthdate || '';
       document.getElementById('settings-gender').value    = userGender    || '';
       _applyGenderStyle(userGender);
       document.getElementById('trigger-result').textContent = '';
@@ -948,12 +936,6 @@
     function selectGender(g) {
       document.getElementById('settings-gender').value = g;
       _applyGenderStyle(g);
-    }
-    function toggleApiKeyVisibility() {
-      var input = document.getElementById('settings-api-key');
-      var eye   = document.getElementById('api-key-eye');
-      if (input.type === 'password') { input.type = 'text';     eye.textContent = '🙈'; }
-      else                           { input.type = 'password'; eye.textContent = '👁';  }
     }
     function setupTriggers() {
       if (!webAppUrl) { alert('先にGASウェブアプリURLを設定してください'); return; }
@@ -1019,26 +1001,9 @@
       // 生年月日・性別を取得・保存
       const newBirthdate = document.getElementById('settings-birthdate').value.trim();
       const newGender    = document.getElementById('settings-gender').value;
-      const newApiKey    = document.getElementById('settings-api-key').value.trim();
       if (newBirthdate) userBirthdate = newBirthdate;
       if (newGender)    userGender    = newGender;
-      if (newApiKey)    userApiKey    = newApiKey;
-      saveToStorage({ webAppUrl, userName, aiName, birthdate: userBirthdate, gender: userGender, apiKey: userApiKey });
-
-      // GASにも設定を送信（APIキー・名前・気質をUserPropertiesに保存）
-      if (webAppUrl) {
-        fetch(webAppUrl, {
-          method: 'POST', redirect: 'follow',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({
-            type: 'save_settings',
-            userName, aiName,
-            apiKey: newApiKey || '',
-            birthdate: userBirthdate,
-            gender: userGender
-          })
-        }).catch(function() {});  // 失敗しても設定画面は閉じる
-      }
+      saveToStorage({ webAppUrl, userName, aiName, birthdate: userBirthdate, gender: userGender });
 
       btn.textContent = '保存完了！';
       setTimeout(closeSettings, 700);
