@@ -925,8 +925,7 @@
        設定モーダル
     ══════════════════════════════════════════ */
     function openTimeline() {
-      if (!webAppUrl) { alert('GAS URLを先に設定してください（⚙️ 設定から入力）'); return; }
-      window.open(webAppUrl + '?page=timeline', '_blank');
+      window.location.href = './Timeline_Viewer.html';
     }
 
     function openSettings() {
