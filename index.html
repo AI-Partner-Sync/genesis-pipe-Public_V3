@@ -488,6 +488,113 @@
     .synth-modal-btns .btn-execute { background: linear-gradient(135deg, rgba(240,192,64,0.25), rgba(180,130,0,0.35)); color: var(--gold-400); border: 1px solid rgba(240,192,64,0.35); }
     .synth-modal-btns .btn-execute:hover { box-shadow: 0 0 12px var(--gold-glow-strong); }
     .synth-modal-btns .btn-execute:active { transform: scale(0.97); }
+
+    /* ── Daily Compass Card ── */
+    #compass-card {
+      position: relative; z-index: 10; flex-shrink: 0;
+      border-bottom: 1px solid rgba(240,192,64,0.1);
+    }
+    #compass-collapsed {
+      display: flex; align-items: center; gap: 8px;
+      padding: 7px 14px; cursor: pointer; user-select: none;
+    }
+    #compass-phase-badge {
+      font-size: 11px; font-weight: 700; letter-spacing: 0.05em;
+      padding: 2px 10px; border-radius: 20px; white-space: nowrap; flex-shrink: 0;
+      background: rgba(240,192,64,0.12); color: var(--gold-400);
+      border: 1px solid rgba(240,192,64,0.22);
+    }
+    #compass-summary {
+      flex: 1; font-size: 11px; color: var(--text-secondary);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    #compass-edit-btn {
+      flex-shrink: 0; background: none; border: none; font-size: 13px;
+      cursor: pointer; padding: 4px 7px; border-radius: 6px;
+      color: var(--text-secondary); transition: color 0.2s, background 0.2s;
+    }
+    #compass-edit-btn:hover { color: var(--gold-400); background: rgba(240,192,64,0.08); }
+    #compass-toggle-btn {
+      flex-shrink: 0; background: none; border: none; font-size: 12px;
+      cursor: pointer; color: var(--text-secondary); padding: 4px; line-height: 1; transition: color 0.2s;
+    }
+    #compass-toggle-btn:hover { color: var(--gold-400); }
+    #compass-expanded { display: none; padding: 2px 14px 12px; background: rgba(2,8,23,0.5); }
+    #compass-expanded.open { display: block; }
+    .compass-section { margin-bottom: 9px; }
+    .compass-section:last-child { margin-bottom: 0; }
+    .compass-section-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase;
+      color: var(--text-secondary); margin-bottom: 4px;
+    }
+    .compass-top3-list { list-style: none; display: flex; flex-direction: column; gap: 2px; }
+    .compass-top3-item { display: flex; align-items: baseline; gap: 6px; font-size: 12px; line-height: 1.4; }
+    .compass-top3-num { font-size: 10px; font-weight: 700; color: var(--gold-400); min-width: 14px; flex-shrink: 0; }
+    .compass-top3-text { color: var(--text-primary); }
+    .compass-top3-text.empty { color: var(--text-secondary); font-style: italic; }
+    .compass-daily-text { font-size: 12px; color: var(--text-primary); line-height: 1.5; }
+    .compass-daily-text.empty { color: var(--text-secondary); font-style: italic; }
+
+    /* ── Compass Edit Modal ── */
+    #compass-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+      z-index: 250; justify-content: center; align-items: center;
+      backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    }
+    #compass-overlay.open { display: flex; }
+    #compass-modal {
+      background: var(--navy-800); border: 1px solid var(--glass-border);
+      border-radius: 16px; padding: 24px 20px 20px;
+      width: 340px; max-width: 92vw; max-height: 90vh; overflow-y: auto;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.7);
+    }
+    #compass-modal h3 { margin: 0 0 16px; font-size: 14px; color: var(--gold-400); }
+    .compass-field-label {
+      display: block; font-size: 11px; font-weight: 600; color: var(--text-secondary);
+      letter-spacing: 0.04em; margin-bottom: 5px;
+    }
+    .compass-field-row { display: flex; gap: 6px; margin-bottom: 9px; align-items: center; }
+    .compass-field-input {
+      flex: 1; padding: 9px 12px; font-size: 13px; box-sizing: border-box;
+      background: rgba(13,21,38,0.8); border: 1px solid rgba(240,192,64,0.2);
+      border-radius: 8px; color: var(--text-primary); outline: none; transition: border-color 0.2s;
+    }
+    .compass-field-input:focus { border-color: rgba(240,192,64,0.4); }
+    .compass-field-input::placeholder { color: rgba(136,153,187,0.45); }
+    .compass-daily-input {
+      width: 100%; padding: 9px 12px; font-size: 13px; box-sizing: border-box;
+      background: rgba(13,21,38,0.8); border: 1px solid rgba(240,192,64,0.2);
+      border-radius: 8px; color: var(--text-primary); outline: none;
+      resize: vertical; min-height: 72px; font-family: inherit; line-height: 1.5; transition: border-color 0.2s;
+    }
+    .compass-daily-input:focus { border-color: rgba(240,192,64,0.4); }
+    .compass-daily-input::placeholder { color: rgba(136,153,187,0.45); }
+    .compass-voice-btn {
+      flex-shrink: 0; width: 34px; height: 34px; border-radius: 50%;
+      background: rgba(13,21,38,0.8); border: 1px solid rgba(240,192,64,0.2);
+      color: var(--gold-400); display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: 0.2s;
+    }
+    .compass-voice-btn .material-icons { font-size: 16px; }
+    .compass-voice-btn:hover { border-color: rgba(240,192,64,0.5); background: rgba(240,192,64,0.1); }
+    .compass-voice-btn.recording { background: rgba(239,68,68,0.85); border-color: transparent; color: white; animation: pulse-red 1.5s infinite; }
+    .compass-divider {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase;
+      color: var(--gold-400); margin: 14px 0 10px;
+      border-top: 1px solid rgba(240,192,64,0.12); padding-top: 12px;
+    }
+    .compass-modal-btns { display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px; }
+    .compass-btn-cancel {
+      padding: 9px 18px; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px;
+      background: none; color: var(--text-secondary); font-size: 13px; cursor: pointer; transition: 0.2s;
+    }
+    .compass-btn-cancel:hover { color: var(--text-primary); }
+    .compass-btn-save {
+      padding: 9px 20px; border: none; border-radius: 8px;
+      background: var(--gold-400); color: var(--navy-950);
+      font-size: 13px; font-weight: 700; cursor: pointer; transition: 0.2s;
+    }
+    .compass-btn-save:hover { background: var(--gold-500); }
   </style>
 </head>
 <body>
@@ -568,6 +675,38 @@
     </div>
   </div>
 
+  <!-- Compass Edit Modal -->
+  <div id="compass-overlay" onclick="handleCompassOverlayClick(event)">
+    <div id="compass-modal">
+      <h3>🧭 Weekly Compass を設定</h3>
+
+      <label class="compass-field-label">🎯 今週のTOP3</label>
+      <div class="compass-field-row">
+        <input type="text" id="cm-top1" class="compass-field-input" placeholder="最優先タスク">
+        <button class="compass-voice-btn" onclick="startCompassVoice('cm-top1',this)"><span class="material-icons">mic</span></button>
+      </div>
+      <div class="compass-field-row">
+        <input type="text" id="cm-top2" class="compass-field-input" placeholder="2番目のタスク">
+        <button class="compass-voice-btn" onclick="startCompassVoice('cm-top2',this)"><span class="material-icons">mic</span></button>
+      </div>
+      <div class="compass-field-row">
+        <input type="text" id="cm-top3" class="compass-field-input" placeholder="3番目のタスク（任意）">
+        <button class="compass-voice-btn" onclick="startCompassVoice('cm-top3',this)"><span class="material-icons">mic</span></button>
+      </div>
+
+      <div class="compass-divider">📌 今日の宣言（任意）</div>
+      <div class="compass-field-row" style="align-items:flex-start;">
+        <textarea id="cm-daily" class="compass-daily-input" placeholder="今日やること。空欄でもOK — TOP3を軸にコーチングします"></textarea>
+        <button class="compass-voice-btn" onclick="startCompassVoice('cm-daily',this)" style="margin-top:2px;"><span class="material-icons">mic</span></button>
+      </div>
+
+      <div class="compass-modal-btns">
+        <button class="compass-btn-cancel" onclick="closeCompassEdit()">キャンセル</button>
+        <button class="compass-btn-save" onclick="saveCompassEdit()">保存する</button>
+      </div>
+    </div>
+  </div>
+
   <canvas id="synapse-canvas"></canvas>
   <div id="aurora-overlay"></div>
 
@@ -596,6 +735,30 @@
             <span class="slider"></span>
           </label>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Daily Compass -->
+  <div id="compass-card" class="glass">
+    <div id="compass-collapsed" onclick="toggleCompass()">
+      <span id="compass-phase-badge">🌅 朝</span>
+      <span id="compass-summary">TOP3を設定してください</span>
+      <button id="compass-edit-btn" onclick="openCompassEdit(event)">✏️</button>
+      <button id="compass-toggle-btn">▼</button>
+    </div>
+    <div id="compass-expanded">
+      <div class="compass-section">
+        <div class="compass-section-label">🎯 今週のTOP3</div>
+        <ul class="compass-top3-list">
+          <li class="compass-top3-item"><span class="compass-top3-num">1.</span><span id="c-top1" class="compass-top3-text empty">未設定</span></li>
+          <li class="compass-top3-item"><span class="compass-top3-num">2.</span><span id="c-top2" class="compass-top3-text empty">未設定</span></li>
+          <li class="compass-top3-item"><span class="compass-top3-num">3.</span><span id="c-top3" class="compass-top3-text empty">未設定</span></li>
+        </ul>
+      </div>
+      <div class="compass-section">
+        <div class="compass-section-label">📌 今日の宣言 <span id="compass-date" style="font-weight:400;text-transform:none;letter-spacing:0;"></span></div>
+        <div id="compass-daily-display" class="compass-daily-text empty">（宣言なし — TOP3達成を目指してコーチングします）</div>
       </div>
     </div>
   </div>
@@ -873,10 +1036,16 @@
         addBubble("⚠️ GASウェブアプリURLが設定されていません。⚙️パートナー設定から設定してください", 'system');
         return;
       }
+      const compass = getCompassContext();
       fetch(webAppUrl, {
         method: "POST", redirect: "follow",
         headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({ type, fullText: text, history, userName, aiName }),
+        body: JSON.stringify({ type, fullText: text, history, userName, aiName,
+          weeklyTop3: compass.weeklyTop3,
+          dailyDeclaration: compass.dailyDeclaration,
+          phase: compass.phase,
+          phaseLabel: compass.phaseLabel,
+        }),
       })
       .then(r => r.json())
       .then(data => {
@@ -1061,9 +1230,128 @@ const btn = document.getElementById('settings-save-btn');
     function autoResize(el) { el.style.height='auto'; el.style.height=el.scrollHeight+'px'; }
     textInput.addEventListener('input', function() { autoResize(this); });
 
+    /* ══════════════════════════════════════════
+       Daily Compass
+    ══════════════════════════════════════════ */
+    let weeklyTop3 = ['', '', ''];
+    let dailyDeclaration = '';
+    let compassExpanded = true;
+    let compassVoiceActive = null;
+    let compassVoiceBtn = null;
+
+    function getPhase() {
+      const h = new Date().getHours();
+      if (h >= 5 && h < 12) return { emoji: '🌅', label: '朝', key: 'morning' };
+      if (h >= 12 && h < 17) return { emoji: '☀️', label: '昼', key: 'midday' };
+      return { emoji: '🌙', label: '夜', key: 'evening' };
+    }
+
+    function getTodayStr() {
+      const d = new Date();
+      return d.getFullYear() + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + String(d.getDate()).padStart(2,'0');
+    }
+
+    function initCompass() {
+      const s = loadFromStorage();
+      weeklyTop3 = s.weeklyTop3 || ['', '', ''];
+      const todayStr = getTodayStr();
+      const saved = s.dailyDeclaration || {};
+      dailyDeclaration = (saved.date === todayStr) ? (saved.text || '') : '';
+      compassExpanded = (s.compassExpanded !== false);
+      renderCompass();
+      if (compassExpanded) document.getElementById('compass-expanded').classList.add('open');
+    }
+
+    function renderCompass() {
+      const phase = getPhase();
+      document.getElementById('compass-phase-badge').textContent = phase.emoji + ' ' + phase.label;
+      const first = weeklyTop3.find(function(t){ return t.trim(); });
+      const count = weeklyTop3.filter(function(t){ return t.trim(); }).length;
+      document.getElementById('compass-summary').textContent = count > 0
+        ? first + (count > 1 ? ' ほか' + (count-1) + '件' : '')
+        : 'TOP3を設定してください';
+      [0,1,2].forEach(function(i) {
+        const el = document.getElementById('c-top' + (i+1));
+        const v = weeklyTop3[i] || '';
+        el.textContent = v || '未設定';
+        el.classList.toggle('empty', !v);
+      });
+      document.getElementById('compass-date').textContent = getTodayStr();
+      const dEl = document.getElementById('compass-daily-display');
+      dEl.textContent = dailyDeclaration || '（宣言なし — TOP3達成を目指してコーチングします）';
+      dEl.classList.toggle('empty', !dailyDeclaration);
+      document.getElementById('compass-toggle-btn').textContent = compassExpanded ? '▲' : '▼';
+    }
+
+    function toggleCompass() {
+      compassExpanded = !compassExpanded;
+      document.getElementById('compass-expanded').classList.toggle('open', compassExpanded);
+      document.getElementById('compass-toggle-btn').textContent = compassExpanded ? '▲' : '▼';
+      saveToStorage({ compassExpanded: compassExpanded });
+    }
+
+    function openCompassEdit(event) {
+      if (event) event.stopPropagation();
+      document.getElementById('cm-top1').value = weeklyTop3[0] || '';
+      document.getElementById('cm-top2').value = weeklyTop3[1] || '';
+      document.getElementById('cm-top3').value = weeklyTop3[2] || '';
+      document.getElementById('cm-daily').value = dailyDeclaration || '';
+      document.getElementById('compass-overlay').classList.add('open');
+    }
+
+    function closeCompassEdit() {
+      document.getElementById('compass-overlay').classList.remove('open');
+      stopCompassVoice();
+    }
+
+    function handleCompassOverlayClick(e) {
+      if (e.target === document.getElementById('compass-overlay')) closeCompassEdit();
+    }
+
+    function saveCompassEdit() {
+      weeklyTop3 = [
+        document.getElementById('cm-top1').value.trim(),
+        document.getElementById('cm-top2').value.trim(),
+        document.getElementById('cm-top3').value.trim(),
+      ];
+      dailyDeclaration = document.getElementById('cm-daily').value.trim();
+      saveToStorage({
+        weeklyTop3: weeklyTop3,
+        dailyDeclaration: { date: getTodayStr(), text: dailyDeclaration }
+      });
+      closeCompassEdit();
+      renderCompass();
+    }
+
+    function startCompassVoice(fieldId, btn) {
+      if (!SpeechRecognitionAPI) { alert('このブラウザは音声入力に対応していません'); return; }
+      if (compassVoiceActive) { stopCompassVoice(); return; }
+      const r = new SpeechRecognitionAPI();
+      r.lang = 'ja-JP'; r.continuous = false; r.interimResults = false;
+      r.onstart = function() { compassVoiceActive = r; compassVoiceBtn = btn; btn.classList.add('recording'); };
+      r.onresult = function(e) {
+        document.getElementById(fieldId).value = Array.from(e.results).map(function(x){ return x[0].transcript; }).join('');
+      };
+      r.onend = function() { stopCompassVoice(); };
+      r.onerror = function() { stopCompassVoice(); };
+      r.start();
+    }
+
+    function stopCompassVoice() {
+      if (compassVoiceActive) { try { compassVoiceActive.stop(); } catch(e){} compassVoiceActive = null; }
+      if (compassVoiceBtn) { compassVoiceBtn.classList.remove('recording'); compassVoiceBtn = null; }
+    }
+
+    function getCompassContext() {
+      const top3Str = weeklyTop3.map(function(t, i){ return (i+1) + '. ' + (t || '（未設定）'); }).join('\n');
+      const phase = getPhase();
+      return { weeklyTop3: top3Str, dailyDeclaration: dailyDeclaration || '', phase: phase.key, phaseLabel: phase.label };
+    }
+
     /* ── 初期化 ── */
     initMic();
     checkInitialSetup();
+    initCompass();
   
     /* ── TTS ── */
     function toggleTts() {
