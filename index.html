@@ -1442,6 +1442,9 @@ const btn = document.getElementById('settings-save-btn');
           // AudioContext経由で再生（iOS Safariのautoplay制限を回避）
           try {
             const ctx = _getTtsCtx();
+            // 長時間の放置・バックグラウンド化でiOSがAudioContextを勝手にsuspendすることがあるため、
+            // 再生の都度、念のため resume() しておく（既にrunning中なら無害な no-op）
+            if (ctx.state === 'suspended') { ctx.resume().catch(() => {}); }
             const bytes = Uint8Array.from(atob(data.audioContent), c => c.charCodeAt(0));
             ctx.decodeAudioData(bytes.buffer, function(buffer) {
               if (_ttsSrc) { try { _ttsSrc.stop(); } catch(e) {} }
