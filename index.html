@@ -667,6 +667,12 @@
         <span class="slider-val" id="pitch-val">0.0</span>
       </div>
       <div class="settings-hint">−5（低め）→ 0（標準）→ +5（高め）</div>
+      <label class="settings-label">音量</label>
+      <div class="slider-row">
+        <input type="range" id="settings-tts-volume" min="0" max="1" step="0.05" value="1"
+          oninput="document.getElementById('volume-val').textContent=Math.round(this.value*100)+'%'">
+        <span class="slider-val" id="volume-val">100%</span>
+      </div>
 
       <div class="settings-btn-group">
         <button class="settings-btn-cancel" onclick="closeSettings()">キャンセル</button>
@@ -854,6 +860,7 @@
     let ttsVoice    = _saved.ttsVoice    || 'ja-JP-Neural2-C';
     let ttsRate     = (_saved.ttsRate    != null) ? _saved.ttsRate  : 0.93;
     let ttsPitch    = (_saved.ttsPitch   != null) ? _saved.ttsPitch : 0.0;
+    let ttsVolume   = (_saved.ttsVolume  != null) ? _saved.ttsVolume : 1.0;
     let ttsEnabled  = false;
     let currentAudio = null;
     let _ttsCtx = null;
@@ -1143,8 +1150,10 @@ const btn = document.getElementById('settings-save-btn');
       document.getElementById('settings-tts-voice').value = ttsVoice;
       const rEl = document.getElementById('settings-tts-rate');
       const pEl = document.getElementById('settings-tts-pitch');
+      const vEl = document.getElementById('settings-tts-volume');
       if (rEl) { rEl.value = ttsRate; document.getElementById('rate-val').textContent = parseFloat(ttsRate).toFixed(2); }
       if (pEl) { pEl.value = ttsPitch; document.getElementById('pitch-val').textContent = parseFloat(ttsPitch).toFixed(1); }
+      if (vEl) { vEl.value = ttsVolume; document.getElementById('volume-val').textContent = Math.round(parseFloat(ttsVolume) * 100) + '%'; }
       document.getElementById('settings-overlay').classList.add('open');
     }
     function closeSettings() {
@@ -1172,7 +1181,8 @@ const btn = document.getElementById('settings-save-btn');
       const newTtsVoice  = document.getElementById('settings-tts-voice').value;
       const newTtsRate   = parseFloat(document.getElementById('settings-tts-rate').value);
       const newTtsPitch  = parseFloat(document.getElementById('settings-tts-pitch').value);
-      ttsVoice = newTtsVoice; ttsRate = newTtsRate; ttsPitch = newTtsPitch;
+      const newTtsVolume = parseFloat(document.getElementById('settings-tts-volume').value);
+      ttsVoice = newTtsVoice; ttsRate = newTtsRate; ttsPitch = newTtsPitch; ttsVolume = newTtsVolume;
       const urlInput   = document.getElementById('settings-gas-url-input').value.trim();
       const urlEditOpen = document.getElementById('settings-url-edit').classList.contains('open');
       if (urlEditOpen && urlInput && !urlInput.includes('/macros/s/')) {
@@ -1183,7 +1193,7 @@ const btn = document.getElementById('settings-save-btn');
       if (urlEditOpen && urlInput) { webAppUrl = urlInput; }
       userName = newUserName; aiName = newAiName;
       // 生年月日・性別を取得・保存
-      saveToStorage({ webAppUrl, userName, aiName, ttsVoice, ttsRate, ttsPitch });
+      saveToStorage({ webAppUrl, userName, aiName, ttsVoice, ttsRate, ttsPitch, ttsVolume });
 
       btn.textContent = '保存完了！';
       setTimeout(closeSettings, 700);
@@ -1437,12 +1447,16 @@ const btn = document.getElementById('settings-save-btn');
               if (_ttsSrc) { try { _ttsSrc.stop(); } catch(e) {} }
               _ttsSrc = ctx.createBufferSource();
               _ttsSrc.buffer = buffer;
-              _ttsSrc.connect(ctx.destination);
+              const gainNode = ctx.createGain();
+              gainNode.gain.value = ttsVolume;
+              _ttsSrc.connect(gainNode);
+              gainNode.connect(ctx.destination);
               _ttsSrc.start(0);
               _ttsSrc.onended = function() { _ttsSrc = null; };
             }, function() { fallbackSpeak(plain); });
           } catch(e) {
             currentAudio = new Audio('data:audio/mp3;base64,' + data.audioContent);
+            currentAudio.volume = ttsVolume;
             currentAudio.play().catch(() => fallbackSpeak(plain));
             currentAudio.onended = () => { currentAudio = null; };
           }
@@ -1455,7 +1469,7 @@ const btn = document.getElementById('settings-save-btn');
       if (!window.speechSynthesis) return;
       window.speechSynthesis.cancel();
       const utter = new SpeechSynthesisUtterance(plain);
-      utter.lang = 'ja-JP'; utter.rate = ttsRate; utter.pitch = 1.0;
+      utter.lang = 'ja-JP'; utter.rate = ttsRate; utter.pitch = 1.0; utter.volume = ttsVolume;
       const voices = window.speechSynthesis.getVoices();
       const priority = ['Otoya', 'Google 日本語', 'Kyoko', 'Microsoft Haruka'];
       let best = null;
